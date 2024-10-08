@@ -10,7 +10,7 @@ import Card from "../../atoms/Card/Index"
 import InputLabel from "../../atoms/InputLabel/Index"
 import ToggleSwitch from "../../atoms/ToggleSwitch/Index"
 
-const CalculatorPage = () => {
+const RevenueCalculator = () => {
   const [selection, setSelection] = useState("influencer")
   const [formData, setFormData] = useState({
     name: "",
@@ -384,4 +384,4 @@ const CalculatorPage = () => {
   )
 }
 
-export default CalculatorPage
+export default RevenueCalculator

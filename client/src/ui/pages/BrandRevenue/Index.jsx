@@ -6,9 +6,9 @@ import Heading from "../../atoms/Typography/Heading/Index"
 import Subtitle from "../../atoms/Typography/Subtitle/Index"
 import ResultGrid from "../../molecules/ResultGrid/Index"
 import OutreachOverview from "../../molecules/OutReachOverview/Index"
-import ToggleInfluencerMode from "../../molecules/ToggleInfluencerMode/Index"
+import ToggleSwitch from "../../molecules/ToggleSwitch/Index"
 
-const BrandRevenuePotential = () => {
+const BrandRevenue = () => {
   const navigate = useNavigate()
   const [isInfluencerMode, setIsInfluencerMode] = useState(false)
 
@@ -23,7 +23,7 @@ const BrandRevenuePotential = () => {
     <div className="min-h-screen bg-gray-50 p-8 relative">
       {/* Toggle Switch positioned at the top-right corner */}
       <div className="absolute top-4 right-8">
-        <ToggleInfluencerMode
+        <ToggleSwitch
           checked={isInfluencerMode}
           onChange={handleToggleChange}
         />
@@ -80,4 +80,4 @@ const BrandRevenuePotential = () => {
   )
 }
 
-export default BrandRevenuePotential
+export default BrandRevenue

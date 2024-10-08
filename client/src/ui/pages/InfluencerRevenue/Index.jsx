@@ -5,10 +5,10 @@ import CampaignOverview from "../../molecules/CampaignOverview/Index"
 import EarningsOverview from "../../molecules/EarningsOverview/Index"
 import FutureSalesSection from "../../molecules/FutureSaleSection/Index"
 import ResultGrid from "../../molecules/ResultGrid/Index"
-import ToggleInfluencerMode from "../../molecules/ToggleInfluencerMode/Index"
+import ToggleSwitch from "../../molecules/ToggleSwitch/Index"
 import Heading from "../../atoms/Typography/Heading/Index"
 
-const RevenuePotentialPage = () => {
+const InfluencerRevenue = () => {
   const navigate = useNavigate()
   const [isInfluencerMode, setIsInfluencerMode] = useState(true)
 
@@ -27,7 +27,7 @@ const RevenuePotentialPage = () => {
     <div className="min-h-screen bg-white p-8 relative">
       {/* Switch positioned at the top-right corner */}
       <div className="absolute top-4 right-8">
-        <ToggleInfluencerMode
+        <ToggleSwitch
           checked={isInfluencerMode}
           onChange={handleToggleChange}
         />
@@ -64,4 +64,4 @@ const RevenuePotentialPage = () => {
   )
 }
 
-export default RevenuePotentialPage
+export default InfluencerRevenue
