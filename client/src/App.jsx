@@ -1,9 +1,9 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom"
-import CalculatorPage from "./ui/pages/Calculator/Index"
 import Navbar from "./ui/molecules/Navbar/Index"
 import Footer from "./ui/molecules/Footer/Index"
 import RevenuePotentialPage from "./ui/pages/InfluencerRevenue/Index"
 import BrandRevenuePotential from "./ui/pages/BrandRevenue/Index"
+import RevenueCalculator from "./ui/pages/RevenueCalculator/Index"
 
 const App = () => {
   return (
@@ -13,7 +13,7 @@ const App = () => {
 
         <div className="flex-grow">
           <Routes>
-            <Route path="/calculator" element={<CalculatorPage />} />
+            <Route path="/calculator" element={<RevenueCalculator />} />
             <Route path="/influencer" element={<RevenuePotentialPage />} />
             <Route path="/brand" element={<BrandRevenuePotential />} />
           </Routes>

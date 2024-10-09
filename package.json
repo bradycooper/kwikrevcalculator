@@ -11,8 +11,10 @@
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "express": "^4.19.2",
+    "formik": "^2.4.6",
     "react-router-dom": "^6.26.1",
-    "recharts": "^2.12.7"
+    "recharts": "^2.12.7",
+    "yup": "^1.4.0"
   },
   "name": "kwik-estimated-revenue-calc",
   "version": "1.0.0",

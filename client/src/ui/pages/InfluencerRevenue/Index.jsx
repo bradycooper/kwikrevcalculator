@@ -34,8 +34,14 @@ const InfluencerRevenue = () => {
       </div>
 
       <div className="text-center mt-8">
-        <Heading>Influencer Earnings Potential</Heading>
+        <Heading className="text-4xl font-bold">
+          Influencer Earnings Potential
+        </Heading>
+          {/* <Subtitle className="mt-4 text-gray-600">
+            Explore how Kwik AI’s programs can boost your brand’s revenue.
+          </Subtitle> */}
       </div>
+
 
       {/* Earnings Overview */}
       <div className="mt-12 flex justify-center">

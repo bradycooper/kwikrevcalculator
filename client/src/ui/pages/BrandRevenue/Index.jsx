@@ -34,9 +34,9 @@ const BrandRevenue = () => {
         <Heading className="text-4xl font-bold">
           Brand Revenue Potential
         </Heading>
-        <Subtitle className="mt-4 text-gray-600">
-          Explore how Kwik AI’s programs can boost your brand’s revenue.
-        </Subtitle>
+          {/* <Subtitle className="mt-4 text-gray-600">
+            Explore how Kwik AI’s programs can boost your brand’s revenue.
+          </Subtitle> */}
       </div>
 
       {/* Revenue Estimate */}

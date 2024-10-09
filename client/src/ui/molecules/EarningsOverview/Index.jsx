@@ -1,5 +1,5 @@
-import React from "react"
-import EarningsCard from "../EraningsCard/Index"
+import React from "react";
+import EarningsCard from "../EraningsCard/Index";
 
 const EarningsOverview = () => (
   <div className="flex items-center justify-center space-x-4">
@@ -17,6 +17,6 @@ const EarningsOverview = () => (
       borderClass="border-red-300"
     />
   </div>
-)
+);
 
-export default EarningsOverview
+export default EarningsOverview;
