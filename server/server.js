@@ -49,32 +49,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
 // Function to read data from Google Sheets
-app.get("/api/sheet-data", async (req, res) => {
-  try {
-    console.log("Fetching Google Sheets data...");
-    console.log("SPREADSHEET_ID:", SPREADSHEET_ID);
-
-    if (!SPREADSHEET_ID) {
-      throw new Error("SPREADSHEET_ID is not set");
-    }
-
-    const sheets = google.sheets({ version: "v4", auth: serviceAccountAuth });
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: "Sheet1!A1:Z1000",
-    });
-
-    console.log("Google Sheets data fetched successfully");
-    res.json(response.data.values);
-  } catch (error) {
-    console.error("Error fetching Google Sheets data:", error);
-    res
-      .status(500)
-      .json({ message: "Error fetching sheet data", error: error.message });
-  }
-});
-
-// MongoDB data storage route
 app.post("/api/submit", async (req, res) => {
   const formData = req.body;
   console.log("Received form data:", formData);
@@ -115,8 +89,8 @@ app.post("/api/submit", async (req, res) => {
 
     // Update existing keys with new values from formData
     Object.keys(keyMapping).forEach(key => {
-      if (keyMapping[key] !== undefined) {
-        existingData[key] = keyMapping[key];
+      if (keyMapping[key] !== undefined && existingData.hasOwnProperty(key)) {
+        existingData[key] = keyMapping[key]; // Update only existing keys
       }
     });
 
@@ -150,6 +124,89 @@ app.post("/api/submit", async (req, res) => {
     });
   }
 });
+
+
+
+// MongoDB data storage route
+app.post("/api/submit", async (req, res) => {
+  const formData = req.body;
+  console.log("Received form data:", formData);
+
+  try {
+    const sheets = google.sheets({ version: "v4", auth: serviceAccountAuth });
+
+    // Fetch existing values from the Google Sheet
+    const { data: { values } } = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: "Sheet2!A2:B"
+    });
+
+    // Create a map for quick lookup of existing keys
+    const existingData = {};
+    values.forEach(row => {
+      const key = row[0];
+      const value = row[1];
+      existingData[key] = value;
+    });
+
+    // Map formData keys to the exact keys in the sheet
+    const keyMapping = {
+      "Influencer Audience Size": formData.followers,
+      "Influencer Audience Size (Lookup)": formData.influencerAudienceSizeLookup,
+      "# Posts / Gig": formData.postsPerGig,
+      "$ / Post": formData.postRate ? `$${formData.postRate}` : undefined,
+      "AOV": formData.averageAOV ? `$${formData.averageAOV}` : undefined,
+      "Typical Commission %": formData.commission ? `${formData.commission}%` : undefined,
+      "Show Lifetime Attribution?": formData.showLifetimeAttribution,
+      "Show Social Partnership & Retention?": formData.showSocialPartnership,
+      "Show Refer Influencers?": formData.showReferInfluencers,
+      "Show Your Brand?": formData.showYourBrand,
+      "# Influencers Referred": formData.influencersReferred,
+      "Influencer Size": formData.influencerSize,
+      "Target Annual Income": formData.targetIncome ? `$${formData.targetIncome}` : undefined,
+    };
+
+    // Update existing keys only if they are present in both existingData and keyMapping
+    Object.keys(keyMapping).forEach(key => {
+      if (existingData.hasOwnProperty(key) && keyMapping[key] !== undefined) {
+        existingData[key] = keyMapping[key]; // Update only existing keys
+      }
+    });
+
+    // Save data to MongoDB before sending to Google Sheets
+    const database = client.db("kwik-leads");
+    const leads = database.collection("leads");
+    const result = await leads.insertOne(formData);
+    console.log("Inserted document into MongoDB:", result.insertedId);
+
+    // Prepare updated values for the Google Sheets API
+    const updatedValues = Object.entries(existingData)
+      .filter(([key, value]) => keyMapping[key] !== undefined) // Filter out keys that are not in the keyMapping
+      .map(([key, value]) => [key, value]); // Prepare the values to be updated
+
+    console.log("Updated values:", updatedValues);
+
+    // Send updated values back to Google Sheets
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: "Sheet2!A2:B", // Adjust this range according to your layout
+      valueInputOption: "USER_ENTERED",
+      resource: { values: updatedValues },
+    });
+
+    console.log("Form data sent to Google Sheets successfully.");
+    res.status(200).json({
+      message: "Data sent to Google Sheets successfully",
+    });
+  } catch (error) {
+    console.error("Error processing form submission:", error);
+    res.status(500).json({
+      message: "Error processing form submission",
+      error: error.message,
+    });
+  }
+});
+
 
 
 

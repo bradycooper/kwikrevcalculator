@@ -6,7 +6,6 @@ import ToggleSwitch from "../../atoms/ToggleSwitch/Index";
 import Title from "../../atoms/Typography/Title/Index";
 import Subtitle from "../../atoms/Typography/Subtitle/Index";
 import Heading from "../../atoms/Typography/Heading/Index";
-// import { submitFormData } from "../../../services/apiService"; // Uncomment when ready to use API
 import axios from "axios";
 import Slider from "../../molecules/Slider/Index";
 import { Card } from "@mui/material";
@@ -58,8 +57,47 @@ const RevenueCalculator = () => {
       }),
   });
 
-  const handleSubmit = async (values, { resetForm }) => {
+  const handleSubmit = async (
+    values,
+    { resetForm, validateForm, setTouched }
+  ) => {
+    console.log("Submitting form with values:", values);
     setLoading(true);
+    const errors = await validateForm();
+
+    // Check if there are any validation errors
+    if (Object.keys(errors).length) {
+      // Set advancedFields to true to show advanced fields
+      setAdvancedFields(true);
+
+      // Mark all fields as touched to display errors
+      setTouched({
+        name: true,
+        email: true,
+        followers: true,
+        ...(selection === "influencer" &&
+          advancedFields && {
+            postsPerGig: true,
+            postRate: true,
+            averageAOV: true,
+            commission: true,
+            targetIncome: true,
+            influencersReferred: knowMoreInfluencers,
+          }),
+        ...(selection === "brand" &&
+          advancedFields && {
+            annualRevenue: true,
+            aov: true,
+            ltv: true,
+            ecomRevenue: true,
+            budget: true,
+            wholesaleRate: true,
+          }),
+      });
+      setLoading(false);
+      return; // Prevent form submission
+    }
+
     try {
       // Add the type field to the form data based on the selection
       const formData = {
@@ -85,9 +123,9 @@ const RevenueCalculator = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen">
-      <header className="max-w-5xl mx-auto py-10 flex flex-col md:flex-row justify-between items-start px-4">
-        <div className="text-left flex-1">
-          <Title className="text-2xl font-bold">
+      <header className="max-w-6xl mx-auto py-20 flex flex-col md:flex-row justify-between items-start">
+        <div className="text-left flex-1 max-w-[82ch]">
+          <Title className="text-6xl font-bold">
             See The Revenue impacts Kwik Can Have.
           </Title>
           <Subtitle className="text-lg mt-6 text-gray-600">
@@ -95,7 +133,7 @@ const RevenueCalculator = () => {
             earnings with programs you’re not focusing on... yet.
           </Subtitle>
           <Heading className="font-bold mt-4 text-gray-700">
-            Powered by Kwik Ai
+            Powered by <strong>Kwik Ai</strong>
           </Heading>
         </div>
         <div className="flex flex-row md:flex-col space-y-4 mt-8 ml-0 md:ml-20">
@@ -122,7 +160,7 @@ const RevenueCalculator = () => {
         </div>
       </header>
 
-      <section className="max-w-6xl mx-auto bg-white p-8 shadow-md rounded-lg">
+      <section className="max-w-6xl mx-auto bg-white p-20 shadow-md rounded-lg">
         <Heading className="text-2xl font-bold mb-4">
           For {selection === "influencer" ? "Influencers" : "Brands"}
         </Heading>
@@ -191,21 +229,24 @@ const RevenueCalculator = () => {
                 </div>
               </div>
 
-              <div className="my-4">
-                <Slider
-                  value={followersValue}
-                  onChange={(e) => {
-                    const newValue = parseInt(e.target.value, 10);
-                    setFollowersValue(newValue);
-                    setFieldValue("followers", newValue); // Update Formik state
-                  }}
-                />
-                <ErrorMessage
-                  name="followers"
-                  component="div"
-                  className="text-red-500"
-                />
-              </div>
+              {/* Slider shown only for influencers */}
+              {selection === "influencer" && (
+                <div className="my-4">
+                  <Slider
+                    value={followersValue}
+                    onChange={(e) => {
+                      const newValue = parseInt(e.target.value, 10);
+                      setFollowersValue(newValue);
+                      setFieldValue("followers", newValue); // Update Formik state
+                    }}
+                  />
+                  <ErrorMessage
+                    name="followers"
+                    component="div"
+                    className="text-red-500"
+                  />
+                </div>
+              )}
 
               {/* Advanced Fields Toggle */}
               <button
@@ -459,9 +500,9 @@ const RevenueCalculator = () => {
         </Formik>
       </section>
 
-      {showCard && loading && (
+      {loading && (
         <Card
-          show={showCard}
+          show={loading}
           description="Checking your company... Loading Kwik AI... Verifying results..."
         />
       )}
