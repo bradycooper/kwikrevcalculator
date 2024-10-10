@@ -11,7 +11,7 @@ const InfluencerForm = ({ onSubmit, loading }) => {
     name: '',
     email: '',
     followers: '',
-    postsPerGig: '',
+    postsPerCampaign: '',
     postRate: '',
     averageAOV: '',
     commission: '',
@@ -30,7 +30,7 @@ const InfluencerForm = ({ onSubmit, loading }) => {
     name: Yup.string().required('Required'),
     email: Yup.string().email('Invalid email').required('Required'),
     followers: Yup.number().required('Required').min(0),
-    postsPerGig: Yup.number().required('Required'),
+    postsPerCampaign: Yup.number().required('Required'),
     postRate: Yup.number().required('Required'),
     averageAOV: Yup.number().required('Required'),
     commission: Yup.number().required('Required'),
@@ -42,7 +42,7 @@ const InfluencerForm = ({ onSubmit, loading }) => {
       "Name": values.name,
       "Email": values.email,
       "Followers": values.followers,
-      "# Posts / Gig": values.postsPerGig,
+      "# Posts / Gig": values.postsPerCampaign,
       "$ / Post": values.postRate,
       "AOV": values.averageAOV,
       "Typical Commission %": values.commission,
@@ -72,8 +72,8 @@ const InfluencerForm = ({ onSubmit, loading }) => {
         <InputField name="followers" label="Followers" type="number" />
         <ErrorMessage name="followers" component="div" className="text-red-500" />
 
-        <InputField name="postsPerGig" label="# Posts / Gig" type="number" />
-        <ErrorMessage name="postsPerGig" component="div" className="text-red-500" />
+        <InputField name="postsPerCampaign" label="# Posts / Gig" type="number" />
+        <ErrorMessage name="postsPerCampaign" component="div" className="text-red-500" />
 
         <InputField name="postRate" label="$ / Post" type="number" />
         <ErrorMessage name="postRate" component="div" className="text-red-500" />

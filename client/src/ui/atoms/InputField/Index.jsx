@@ -1,30 +1,20 @@
-import React, { useEffect, useState } from "react";
-import InputLabel from "../InputLabel/Index";
+import React from "react";
+import { Field } from "formik";
 
-const InputField = ({ className, label, id, required, value, onChange, ...props }) => {
-  const [inputValue, setInputValue] = useState(value);
-
-  useEffect(() => {
-    setInputValue(value);
-  }, [value]);
-
-  const handleChange = (e) => {
-    setInputValue(e.target.value); // Updates internal state
-    onChange(e); // Pass change to parent component
-  };
-
+const InputField = ({ name, type, required, className, helperText }) => {
   return (
-    <div className="flex flex-col gap-1">
-      {label && <InputLabel id={id} label={label} required={required} />}
-      <input
-        className={`inline-block outline-none bg-grey p-1.5 border border-light-grey ${className}`}
-        id={id}
+    <>
+      <Field
+        helperText="Please enter a valid email address"
+        name={name}
+        type={type}
         required={required}
-        value={inputValue}
-        onChange={handleChange}
-        {...props}
+        className={`w-full h-[50px] p-2 border bg-[#F5F5F5] border-[#DBDBDB] ${className}`}
       />
-    </div>
+      {helperText && (
+        <div className="text-[16] font-[500] text-[#969696] mt-2">{helperText}</div>
+      )}
+    </>
   );
 };
 

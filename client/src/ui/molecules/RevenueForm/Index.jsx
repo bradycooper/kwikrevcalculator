@@ -11,7 +11,7 @@
 //   name: Yup.string().required("Name is required"),
 //   email: Yup.string().email("Invalid email format").required("Email is required"),
 //   followers: Yup.number().nullable(),
-//   postsPerGig: Yup.number().nullable(),
+//   postsPerCampaign: Yup.number().nullable(),
 //   postRate: Yup.number().nullable(),
 //   averageAOV: Yup.number().nullable(),
 //   targetIncome: Yup.number().nullable(),
@@ -22,7 +22,7 @@
 //   name: string;
 //   email: string;
 //   followers?: number;
-//   postsPerGig?: number;
+//   postsPerCampaign?: number;
 //   postRate?: number;
 //   averageAOV?: number;
 //   targetIncome?: number;
@@ -88,11 +88,11 @@
 //                 {/* Influencer-specific fields */}
 //                 <div>
 //                   <Field
-//                     name="postsPerGig"
+//                     name="postsPerCampaign"
 //                     label="Number of Posts Per Gig"
 //                     as={InputField}
 //                   />
-//                   <ErrorMessage name="postsPerGig" component={InputError} />
+//                   <ErrorMessage name="postsPerCampaign" component={InputError} />
 //                 </div>
 
 //                 <div>

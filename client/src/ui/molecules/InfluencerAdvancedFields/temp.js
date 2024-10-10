@@ -8,7 +8,7 @@ import Button from "../../atoms/Button/Index";
 const InfluencerAdvancedFields = ({ knowMoreInfluencers, setKnowMoreInfluencers }) => (
   <Formik
     initialValues={{
-      postsPerGig: '',
+      postsPerCampaign: '',
       postRate: '',
       averageAOV: '',
       commission: '',
@@ -17,7 +17,7 @@ const InfluencerAdvancedFields = ({ knowMoreInfluencers, setKnowMoreInfluencers 
       knowMoreInfluencers: knowMoreInfluencers
     }}
     validationSchema={Yup.object({
-      postsPerGig: Yup.string().required('Required'),
+      postsPerCampaign: Yup.string().required('Required'),
       postRate: Yup.number().required('Required'),
       averageAOV: Yup.number().required('Required'),
       commission: Yup.number().required('Required'),
@@ -34,14 +34,14 @@ const InfluencerAdvancedFields = ({ knowMoreInfluencers, setKnowMoreInfluencers 
       <Form className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
         <div className="col-span-2 md:col-span-1">
           <InputLabel label="Number of Posts Per Gig" />
-          <Field as="select" name="postsPerGig" className="block w-full p-2 border">
+          <Field as="select" name="postsPerCampaign" className="block w-full p-2 border">
             <option value="" disabled>Select number of posts</option>
             <option value="1">1 Post</option>
             <option value="2">2 Posts</option>
             <option value="3">3 Posts</option>
             <option value="4">4 Posts</option>
           </Field>
-          <ErrorMessage name="postsPerGig" component="div" className="text-red-500 text-sm" />
+          <ErrorMessage name="postsPerCampaign" component="div" className="text-red-500 text-sm" />
         </div>
         {/* Repeat similar blocks for each field */}
         <div className="col-span-2 flex items-center mt-6">

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Button from "../../atoms/Button/Index";
 import ToggleSwitch from "../../atoms/ToggleSwitch/Index";
@@ -8,7 +8,10 @@ import Subtitle from "../../atoms/Typography/Subtitle/Index";
 import Heading from "../../atoms/Typography/Heading/Index";
 import axios from "axios";
 import Slider from "../../molecules/Slider/Index";
-import { Card } from "@mui/material";
+import { CircularProgress, Modal } from "@mui/material";
+import InputLabel from "../../atoms/InputLabel/Index";
+import InputField from "../../atoms/InputField/Index";
+import { useNavigate } from "react-router-dom";
 
 const RevenueCalculator = () => {
   const [selection, setSelection] = useState("influencer");
@@ -17,6 +20,8 @@ const RevenueCalculator = () => {
   const [loading, setLoading] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const [followersValue, setFollowersValue] = useState(0); // State for followers value
+
+  const navigate = useNavigate();
 
   const toggleSelection = (type) => {
     setSelection(type);
@@ -32,7 +37,7 @@ const RevenueCalculator = () => {
       .required("Number of Followers is required"),
     ...(selection === "influencer" &&
       advancedFields && {
-        postsPerGig: Yup.number().required("Posts per gig is required"),
+        postsPerCampaign: Yup.number().required("Posts per gig is required"),
         postRate: Yup.number().required("Rate per post is required"),
         averageAOV: Yup.number().required("Average order value is required"),
         commission: Yup.number().required("Commission percentage is required"),
@@ -77,7 +82,7 @@ const RevenueCalculator = () => {
         followers: true,
         ...(selection === "influencer" &&
           advancedFields && {
-            postsPerGig: true,
+            postsPerCampaign: true,
             postRate: true,
             averageAOV: true,
             commission: true,
@@ -95,7 +100,7 @@ const RevenueCalculator = () => {
           }),
       });
       setLoading(false);
-      return; // Prevent form submission
+      return;
     }
 
     try {
@@ -113,6 +118,11 @@ const RevenueCalculator = () => {
       const response = await axios.post(`${baseURL}/api/submit`, formData);
       console.log("Response from backend:", response.data);
       setShowCard(true);
+      if (selection === "influencer") {
+        navigate("/influencer");
+        return;
+      }
+      navigate("/brand");
       resetForm(); // Reset the form after submission
     } catch (error) {
       console.error("Error submitting form data:", error);
@@ -160,11 +170,11 @@ const RevenueCalculator = () => {
         </div>
       </header>
 
-      <section className="max-w-6xl mx-auto bg-white p-20 shadow-md rounded-lg">
-        <Heading className="text-2xl font-bold mb-4">
+      <section className="max-w-6xl mx-auto my-9 bg-white p-20 shadow-md rounded-lg">
+        <Heading className="text-[35px] font-bold mb-4">
           For {selection === "influencer" ? "Influencers" : "Brands"}
         </Heading>
-        <Subtitle className="text-gray-600 mb-6">
+        <Subtitle className="text-gray-600 mb-6 !text-[16px] max-width-[43ch;]">
           {selection === "influencer"
             ? "Are you a creator looking to monetize your influence even more? Enter some basic information and see what Kwik can do for you."
             : "Let’s see what Kwik can do for your brand to help you make more revenue than you’re getting today."}
@@ -175,7 +185,7 @@ const RevenueCalculator = () => {
             name: "",
             email: "",
             followers: 0,
-            postsPerGig: "",
+            postsPerCampaign: "",
             postRate: "",
             averageAOV: "",
             commission: "",
@@ -196,14 +206,8 @@ const RevenueCalculator = () => {
               {/* Basic Fields */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="name" className="font-medium">
-                    Name <span className="text-red-500">*</span>
-                  </label>
-                  <Field
-                    name="name"
-                    required
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                  />
+                  <InputLabel required label={"Influencer Name"} id={"name"} />
+                  <InputField name="name" required />
                   <ErrorMessage
                     name="name"
                     component="div"
@@ -212,15 +216,8 @@ const RevenueCalculator = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="font-medium">
-                    Email <span className="text-red-500">*</span>
-                  </label>
-                  <Field
-                    name="email"
-                    type="email"
-                    required
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                  />
+                  <InputLabel required label={"Email"} id={"email"} />
+                  <InputField name="email" type="email" required />
                   <ErrorMessage
                     name="email"
                     component="div"
@@ -229,30 +226,27 @@ const RevenueCalculator = () => {
                 </div>
               </div>
 
-              {/* Slider shown only for influencers */}
-              {selection === "influencer" && (
-                <div className="my-4">
-                  <Slider
-                    value={followersValue}
-                    onChange={(e) => {
-                      const newValue = parseInt(e.target.value, 10);
-                      setFollowersValue(newValue);
-                      setFieldValue("followers", newValue); // Update Formik state
-                    }}
-                  />
-                  <ErrorMessage
-                    name="followers"
-                    component="div"
-                    className="text-red-500"
-                  />
-                </div>
-              )}
+              <div className="my-4">
+                <Slider
+                  value={followersValue}
+                  onChange={(e) => {
+                    const newValue = parseInt(e.target.value, 10);
+                    setFollowersValue(newValue);
+                    setFieldValue("followers", newValue); // Update Formik state
+                  }}
+                />
+                <ErrorMessage
+                  name="followers"
+                  component="div"
+                  className="text-red-500"
+                />
+              </div>
 
               {/* Advanced Fields Toggle */}
               <button
                 type="button"
                 onClick={() => setAdvancedFields(!advancedFields)}
-                className="text-gray-600 mt-4"
+                className="text-gray-600 !mt-[70px]"
               >
                 <strong>
                   {advancedFields
@@ -263,92 +257,106 @@ const RevenueCalculator = () => {
 
               {/* Influencer Advanced Fields */}
               {advancedFields && selection === "influencer" && (
-                <>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="postsPerGig" className="font-medium">
-                        Posts Per Gig <span className="text-red-500">*</span>
-                      </label>
-                      <Field
-                        name="postsPerGig"
-                        type="number"
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                      />
-                      <ErrorMessage
-                        name="postsPerGig"
-                        component="div"
-                        className="text-red-500"
-                      />
-                    </div>
+                <div className="grid grid-cols-2 gap-10">
+                  <div>
+                    <InputLabel
+                      required
+                      label={"Posts per Campaign"}
+                      id={"postsPerCampaign"}
+                    />
+                    <InputField
+                      name="postsPerCampaign"
+                      type="number"
+                      helperText={
+                        "When  working with a brand, How many times do you posts per campaign."
+                      }
+                    />
+                    <ErrorMessage
+                      name="postsPerCampaign"
+                      component="div"
+                      className="text-red-500"
+                    />
+                  </div>
 
-                    <div>
-                      <label htmlFor="postRate" className="font-medium">
-                        $ / Post <span className="text-red-500">*</span>
-                      </label>
-                      <Field
-                        name="postRate"
-                        type="number"
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                      />
-                      <ErrorMessage
-                        name="postRate"
-                        component="div"
-                        className="text-red-500"
-                      />
-                    </div>
+                  <div>
+                    <InputLabel
+                      required
+                      label={"Average AOV ($)"}
+                      id={"averageAOV"}
+                    />
+                    <InputField
+                      name="averageAOV"
+                      type="number"
+                      helperText="For the brands you’re promoting, what’s your best guess at average cost of the products you sell?"
+                    />
+                    <ErrorMessage
+                      name="averageAOV"
+                      component="div"
+                      className="text-red-500"
+                    />
+                  </div>
 
-                    <div>
-                      <label htmlFor="averageAOV" className="font-medium">
-                        AOV ($) <span className="text-red-500">*</span>
-                      </label>
-                      <Field
-                        name="averageAOV"
-                        type="number"
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                      />
-                      <ErrorMessage
-                        name="averageAOV"
-                        component="div"
-                        className="text-red-500"
-                      />
-                    </div>
+                  <div>
+                    <InputLabel
+                      required
+                      label={"Posting Rates ($)"}
+                      id={"postRate"}
+                    />
+                    <InputField
+                      name="postRate"
+                      type="number"
+                      helperText="How much do get paid per post?"
+                    />
+                    <ErrorMessage
+                      name="postRate"
+                      component="div"
+                      className="text-red-500"
+                    />
+                  </div>
 
-                    <div>
-                      <label htmlFor="commission" className="font-medium">
-                        Typical Commission %{" "}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <Field
-                        name="commission"
-                        type="number"
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                      />
-                      <ErrorMessage
-                        name="commission"
-                        component="div"
-                        className="text-red-500"
-                      />
-                    </div>
+                  <div>
+                    <InputLabel
+                      required
+                      label={"Target Annual Income ($)"}
+                      id={"targetIncome"}
+                    />
+                    <InputField
+                      name="targetIncome"
+                      type="number"
+                      helperText={
+                        "How much do you want to make a year an income?"
+                      }
+                    />
+                    <ErrorMessage
+                      name="targetIncome"
+                      component="div"
+                      className="text-red-500"
+                    />
+                  </div>
 
-                    <div>
-                      <label htmlFor="targetIncome" className="font-medium">
-                        Target Annual Income{" "}
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <Field
-                        name="targetIncome"
-                        type="number"
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                      />
-                      <ErrorMessage
-                        name="targetIncome"
-                        component="div"
-                        className="text-red-500"
-                      />
-                    </div>
+                  <div>
+                    <InputLabel
+                      required
+                      label={"Typical Commission (%)"}
+                      id={"commission"}
+                    />
+                    <InputField
+                      name="commission"
+                      type="number"
+                      helperText={
+                        "How much do you typically get as a % in commission on sales you drive?"
+                      }
+                    />
+                    <ErrorMessage
+                      name="commission"
+                      component="div"
+                      className="text-red-500"
+                    />
+                  </div>
 
-                    <div className="flex items-center col-span-2 mt-4">
-                      {" "}
+                  <div></div>
+                  <div className="flex items-center mt-6 gap-3">
+                    <div className="flex items-center">
                       <ToggleSwitch
                         checked={knowMoreInfluencers}
                         onChange={() =>
@@ -360,46 +368,42 @@ const RevenueCalculator = () => {
                         Do you know more influencers like you?
                       </label>
                     </div>
-
-                    {knowMoreInfluencers && (
-                      <div className="col-span-2">
-                        {" "}
-                        {/* Span the full width of the grid */}
-                        <label
-                          htmlFor="influencersReferred"
-                          className="font-medium"
-                        >
-                          How many influencers do you know?
-                          <span className="text-red-500">*</span>
-                        </label>
-                        <Field
-                          name="influencersReferred"
-                          type="number"
-                          className="w-full p-2 border border-gray-300 rounded-md"
-                        />
-                        <ErrorMessage
-                          name="influencersReferred"
-                          component="div"
-                          className="text-red-500"
-                        />
-                      </div>
-                    )}
+                    <span className="font-[500] text-[18px]">
+                      Do you know more influencers like you?
+                    </span>
                   </div>
-                </>
+                  {knowMoreInfluencers && (
+                    <div>
+                      <InputLabel
+                        required
+                        label={" How many influencers do you know?"}
+                        id={"influencersReferred"}
+                      />
+                      <InputField
+                        name="influencersReferred"
+                        type="number"
+                        className="w-3/4 p-2 border border-gray-300 rounded-md" // Increased width here
+                      />
+                      <ErrorMessage
+                        name="influencersReferred"
+                        component="div"
+                        className="text-red-500"
+                      />
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Brand Advanced Fields */}
               {advancedFields && selection === "brand" && (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-10">
                   <div>
-                    <label htmlFor="annualRevenue" className="font-medium">
-                      Annual Revenue ($) <span className="text-red-500">*</span>
-                    </label>
-                    <Field
-                      name="annualRevenue"
-                      type="number"
-                      className="w-full p-2 border border-gray-300 rounded-md"
+                    <InputLabel
+                      required
+                      label={"Annual Revenue ($)"}
+                      id="annualRevenue"
                     />
+                    <InputField name="annualRevenue" type="number" />
                     <ErrorMessage
                       name="annualRevenue"
                       component="div"
@@ -408,14 +412,8 @@ const RevenueCalculator = () => {
                   </div>
 
                   <div>
-                    <label htmlFor="aov" className="font-medium">
-                      AOV ($) <span className="text-red-500">*</span>
-                    </label>
-                    <Field
-                      name="aov"
-                      type="number"
-                      className="w-full p-2 border border-gray-300 rounded-md"
-                    />
+                    <InputLabel required label={"AOV ($)"} id="aov" />
+                    <InputField name="aov" type="number" />
                     <ErrorMessage
                       name="aov"
                       component="div"
@@ -424,14 +422,8 @@ const RevenueCalculator = () => {
                   </div>
 
                   <div>
-                    <label htmlFor="ltv" className="font-medium">
-                      LTV ($) <span className="text-red-500">*</span>
-                    </label>
-                    <Field
-                      name="ltv"
-                      type="number"
-                      className="w-full p-2 border border-gray-300 rounded-md"
-                    />
+                    <InputLabel required label={"LTV ($)"} id="ltv" />
+                    <InputField name="ltv" type="number" />
                     <ErrorMessage
                       name="ltv"
                       component="div"
@@ -439,61 +431,68 @@ const RevenueCalculator = () => {
                     />
                   </div>
 
-                  <div>
-                    <label htmlFor="ecomRevenue" className="font-medium">
-                      Ecom Revenue (%) <span className="text-red-500">*</span>
+                  {/* <div>
+                    <label
+                      htmlFor="ecomRevenue"
+                      className="font-[14px] text-light-grey"
+                    >
+                      Ecom Revenue (%) *{" "}
+                      <span className="w-full h-[1px] border-1 border-black" />
                     </label>
-                    <Field
+                   <InputField
                       name="ecomRevenue"
                       type="number"
-                      className="w-full p-2 border border-gray-300 rounded-md"
                     />
                     <ErrorMessage
                       name="ecomRevenue"
+                      component="div"
+                      className="text-red-500"
+                    />
+                  </div> */}
+
+                  <div>
+                    <InputLabel
+                      required
+                      label={"Available Budget for Programs (%)"}
+                      id="budget"
+                    />
+                    <InputField name="budget" type="number" />
+                    <ErrorMessage
+                      name="budget"
                       component="div"
                       className="text-red-500"
                     />
                   </div>
 
-                  <div>
-                    <label htmlFor="budget" className="font-medium">
-                      Available Budget for Programs (%){" "}
-                      <span className="text-red-500">*</span>
+                  {/* <div>
+                    <label
+                      htmlFor="wholesaleRate"
+                      className="font-[14px] text-light-grey"
+                    >
+                      Wholesale Rate (%) *{" "}
+                      <span className="w-full h-[1px] border-1 border-black" />
                     </label>
-                    <Field
-                      name="budget"
-                      type="number"
-                      className="w-full p-2 border border-gray-300 rounded-md"
-                    />
-                    <ErrorMessage
-                      name="budget"
-                      component="div"
-                      className="text-red-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="wholesaleRate" className="font-medium">
-                      Wholesale Rate (%) <span className="text-red-500">*</span>
-                    </label>
-                    <Field
+                   <InputField
                       name="wholesaleRate"
                       type="number"
-                      className="w-full p-2 border border-gray-300 rounded-md"
                     />
                     <ErrorMessage
                       name="wholesaleRate"
                       component="div"
                       className="text-red-500"
                     />
-                  </div>
+                  </div> */}
                 </div>
               )}
 
-              <div className="flex justify-left mt-6">
+              <div
+                className={`flex justify-left ${
+                  advancedFields && "!mt-[50px]"
+                }`}
+              >
                 <Button
                   type="submit"
-                  className="w-[150px] bg-kwikYellow text-black rounded-md hover:bg-[#F6D400]"
+                  className="w-[150px] bg-kwikYellow text-black rounded-md !bg-[#FFD065] hover:bg-[#F9B503] "
                 >
                   Calculate
                 </Button>
@@ -503,12 +502,32 @@ const RevenueCalculator = () => {
         </Formik>
       </section>
 
-      {loading && (
-        <Card
-          show={loading}
-          description="Checking your company... Loading Kwik AI... Verifying results..."
-        />
-      )}
+      {/* {loading && ( */}
+      <Modal
+        open={loading}
+        aria-labelledby="modal-title"
+        aria-describedby="modal-description"
+      >
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg p-6 w-96 flex flex-col items-center shadow-lg">
+            <>
+              <CircularProgress />
+              <h2 className="mt-4 text-xl font-semibold" id="modal-title">
+                Calculating Results
+              </h2>
+              <p
+                className="mt-2 text-center text-gray-600"
+                id="modal-description"
+              >
+                Checking your company... Checking your revenue... Loading Kwik
+                AI... Checking our Modules... Verifying results...
+              </p>
+            </>
+          </div>
+        </div>
+      </Modal>
+
+      {/* )} */}
     </div>
   );
 };
