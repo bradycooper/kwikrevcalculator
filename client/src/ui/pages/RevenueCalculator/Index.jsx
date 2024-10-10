@@ -12,7 +12,7 @@ import { Card } from "@mui/material";
 
 const RevenueCalculator = () => {
   const [selection, setSelection] = useState("influencer");
-  const [advancedFields, setAdvancedFields] = useState(false);
+  const [advancedFields, setAdvancedFields] = useState(true);
   const [knowMoreInfluencers, setKnowMoreInfluencers] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showCard, setShowCard] = useState(false);
@@ -347,32 +347,35 @@ const RevenueCalculator = () => {
                       />
                     </div>
 
-                    <div className="flex items-center mt-6">
-                      <span className="font-bold">
-                        Do you know more influencers like you?
-                      </span>
-                    </div>
-                    <div className="flex items-center">
+                    <div className="flex items-center col-span-2 mt-4">
+                      {" "}
                       <ToggleSwitch
                         checked={knowMoreInfluencers}
                         onChange={() =>
                           setKnowMoreInfluencers(!knowMoreInfluencers)
                         }
+                        className="mr-2"
                       />
+                      <label className="font-medium mr-2">
+                        Do you know more influencers like you?
+                      </label>
                     </div>
 
                     {knowMoreInfluencers && (
-                      <div className="flex justify-start mt-4">
+                      <div className="col-span-2">
+                        {" "}
+                        {/* Span the full width of the grid */}
                         <label
                           htmlFor="influencersReferred"
-                          className="font-medium mr-2"
+                          className="font-medium"
                         >
                           How many influencers do you know?
+                          <span className="text-red-500">*</span>
                         </label>
                         <Field
                           name="influencersReferred"
                           type="number"
-                          className="w-3/4 p-2 border border-gray-300 rounded-md" // Increased width here
+                          className="w-full p-2 border border-gray-300 rounded-md"
                         />
                         <ErrorMessage
                           name="influencersReferred"

@@ -57,42 +57,55 @@ app.post("/api/submit", async (req, res) => {
     const sheets = google.sheets({ version: "v4", auth: serviceAccountAuth });
 
     // Fetch existing values from the Google Sheet
-    const { data: { values } } = await sheets.spreadsheets.values.get({
+    const {
+      data: { values },
+    } = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: "Sheet2!A2:B"
+      range: "Sheet2!A2:B",
     });
 
     // Create a map for quick lookup of existing keys
     const existingData = {};
-    values.forEach(row => {
+    values.forEach((row) => {
       const key = row[0];
       const value = row[1];
       existingData[key] = value;
     });
 
-    // Map formData keys to the exact keys in the sheet
-    const keyMapping = {
-      "Influencer Audience Size": formData.followers || "",
-      "Influencer Audience Size (Lookup)": formData.influencerAudienceSizeLookup || "",
-      "# Posts / Gig": formData.postsPerGig || "",
-      "$ / Post": formData.postRate ? `$${formData.postRate}` : "",
-      "AOV": formData.averageAOV ? `$${formData.averageAOV}` : "",
-      "Typical Commission %": formData.commission ? `${formData.commission}%` : "",
-      "Show Lifetime Attribution?": formData.showLifetimeAttribution || "",
-      "Show Social Partnership & Retention?": formData.showSocialPartnership || "",
-      "Show Refer Influencers?": formData.showReferInfluencers || "",
-      "Show Your Brand?": formData.showYourBrand || "",
-      "# Influencers Referred": formData.influencersReferred || "0",
-      "Influencer Size": formData.influencerSize || "Mid",
-      "Target Annual Income": formData.targetIncome ? `$${formData.targetIncome}` : "",
-    };
+    // Initialize keyMapping based on the type
+    let keyMapping = {};
 
-    // Update existing keys with new values from formData
-    Object.keys(keyMapping).forEach(key => {
-      if (keyMapping[key] !== undefined && existingData.hasOwnProperty(key)) {
-        existingData[key] = keyMapping[key]; // Update only existing keys
-      }
-    });
+    // Map formData keys to the exact keys in the sheet based on type
+    if (formData.type === "influencer") {
+      keyMapping = {
+        "Influencer Audience Size": formData.followers,
+        "# Posts / Gig": formData.postsPerGig,
+        "$ / Post": formData.postRate ? `$${formData.postRate}` : null,
+        AOV: formData.averageAOV ? `$${formData.averageAOV}` : null,
+        // Add other influencer-specific keys if necessary
+      };
+    } else if (formData.type === "brand") {
+      keyMapping = {
+        "Annual Revenue": formData.annualRevenue,
+        AOV: formData.aov,
+        LTV: formData.ltv,
+        "Ecom Revenue": formData.ecomRevenue,
+        Budget: formData.budget,
+        "Wholesale Rate": formData.wholesaleRate,
+        // Add other brand-specific keys if necessary
+      };
+    }
+
+    // Prepare updated values for the Google Sheets API
+    const updatedValues = Object.entries(keyMapping)
+      .filter(
+        ([key, value]) =>
+          existingData.hasOwnProperty(key) && value !== null && value !== ""
+      ) // Only include existing keys with defined values
+      .map(([key, value]) => [key, value]); // Prepare the values to be updated
+
+    // Log the values that will be updated in the sheet
+    console.log("Values to update:", updatedValues);
 
     // Save data to MongoDB before sending to Google Sheets
     const database = client.db("kwik-leads");
@@ -100,19 +113,20 @@ app.post("/api/submit", async (req, res) => {
     const result = await leads.insertOne(formData);
     console.log("Inserted document into MongoDB:", result.insertedId);
 
-    // Prepare updated values for the Google Sheets API
-    const updatedValues = Object.entries(existingData).map(([key, value]) => [key, value]);
-    console.log("Updated values:", updatedValues);
+    // Send updated values back to Google Sheets only if there are values to update
+    if (updatedValues.length > 0) {
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: SPREADSHEET_ID,
+        range: "Sheet2!A2:B", // Adjust this range according to your layout
+        valueInputOption: "USER_ENTERED",
+        resource: { values: updatedValues },
+      });
 
-    // Send updated values back to Google Sheets
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: SPREADSHEET_ID,
-      range: "Sheet2!A2:B", // Adjust this range according to your layout
-      valueInputOption: "USER_ENTERED",
-      resource: { values: updatedValues },
-    });
+      console.log("Form data sent to Google Sheets successfully.");
+    } else {
+      console.log("No matching keys found for update, no values updated.");
+    }
 
-    console.log("Form data sent to Google Sheets successfully.");
     res.status(200).json({
       message: "Data sent to Google Sheets successfully",
     });
@@ -124,8 +138,6 @@ app.post("/api/submit", async (req, res) => {
     });
   }
 });
-
-
 
 // MongoDB data storage route
 app.post("/api/submit", async (req, res) => {
@@ -136,42 +148,53 @@ app.post("/api/submit", async (req, res) => {
     const sheets = google.sheets({ version: "v4", auth: serviceAccountAuth });
 
     // Fetch existing values from the Google Sheet
-    const { data: { values } } = await sheets.spreadsheets.values.get({
+    const {
+      data: { values },
+    } = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: "Sheet2!A2:B"
+      range: "Sheet2!A2:B",
     });
 
     // Create a map for quick lookup of existing keys
     const existingData = {};
-    values.forEach(row => {
+    values.forEach((row) => {
       const key = row[0];
       const value = row[1];
       existingData[key] = value;
     });
 
-    // Map formData keys to the exact keys in the sheet
-    const keyMapping = {
-      "Influencer Audience Size": formData.followers,
-      "Influencer Audience Size (Lookup)": formData.influencerAudienceSizeLookup,
-      "# Posts / Gig": formData.postsPerGig,
-      "$ / Post": formData.postRate ? `$${formData.postRate}` : undefined,
-      "AOV": formData.averageAOV ? `$${formData.averageAOV}` : undefined,
-      "Typical Commission %": formData.commission ? `${formData.commission}%` : undefined,
-      "Show Lifetime Attribution?": formData.showLifetimeAttribution,
-      "Show Social Partnership & Retention?": formData.showSocialPartnership,
-      "Show Refer Influencers?": formData.showReferInfluencers,
-      "Show Your Brand?": formData.showYourBrand,
-      "# Influencers Referred": formData.influencersReferred,
-      "Influencer Size": formData.influencerSize,
-      "Target Annual Income": formData.targetIncome ? `$${formData.targetIncome}` : undefined,
-    };
+    let keyMapping = {};
 
-    // Update existing keys only if they are present in both existingData and keyMapping
-    Object.keys(keyMapping).forEach(key => {
-      if (existingData.hasOwnProperty(key) && keyMapping[key] !== undefined) {
-        existingData[key] = keyMapping[key]; // Update only existing keys
-      }
-    });
+    // Map formData keys to the exact keys in the sheet based on type
+    if (formData.type === "influencer") {
+      keyMapping = {
+        "Influencer Audience Size": formData.followers,
+        "# Posts / Gig": formData.postsPerGig,
+        "$ / Post": formData.postRate ? `$${formData.postRate}` : null,
+        AOV: formData.averageAOV ? `$${formData.averageAOV}` : null,
+        // Add other influencer-specific mappings if needed
+      };
+    } else if (formData.type === "brand") {
+      keyMapping = {
+        "Annual Revenue": formData.annualRevenue,
+        AOV: formData.aov,
+        LTV: formData.ltv,
+        "Ecom Revenue": formData.ecomRevenue,
+        Budget: formData.budget,
+        "Wholesale Rate": formData.wholesaleRate,
+        // Add other brand-specific mappings if needed
+      };
+    }
+
+    // Prepare updated values for the Google Sheets API
+    const updatedValues = Object.entries(keyMapping)
+      .filter(
+        ([key, value]) => existingData.hasOwnProperty(key) && value !== null
+      ) // Ensure the key exists and value is not null
+      .map(([key, value]) => [key, value]); // Prepare the values to be updated
+
+    // Log the values that will be updated in the sheet
+    console.log("Values to update:", updatedValues);
 
     // Save data to MongoDB before sending to Google Sheets
     const database = client.db("kwik-leads");
@@ -179,22 +202,21 @@ app.post("/api/submit", async (req, res) => {
     const result = await leads.insertOne(formData);
     console.log("Inserted document into MongoDB:", result.insertedId);
 
-    // Prepare updated values for the Google Sheets API
-    const updatedValues = Object.entries(existingData)
-      .filter(([key, value]) => keyMapping[key] !== undefined) // Filter out keys that are not in the keyMapping
-      .map(([key, value]) => [key, value]); // Prepare the values to be updated
-
-    console.log("Updated values:", updatedValues);
-
     // Send updated values back to Google Sheets
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: SPREADSHEET_ID,
-      range: "Sheet2!A2:B", // Adjust this range according to your layout
-      valueInputOption: "USER_ENTERED",
-      resource: { values: updatedValues },
-    });
+    if (updatedValues.length > 0) {
+      // Check if there are values to update
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: SPREADSHEET_ID,
+        range: "Sheet2!A2:B", // Adjust this range according to your layout
+        valueInputOption: "USER_ENTERED",
+        resource: { values: updatedValues },
+      });
 
-    console.log("Form data sent to Google Sheets successfully.");
+      console.log("Form data sent to Google Sheets successfully.");
+    } else {
+      console.log("No matching keys found for update.");
+    }
+
     res.status(200).json({
       message: "Data sent to Google Sheets successfully",
     });
@@ -206,9 +228,6 @@ app.post("/api/submit", async (req, res) => {
     });
   }
 });
-
-
-
 
 // Google Sheets data calculation and retrieval route
 // app.post('/api/calculate', async (req, res) => {
