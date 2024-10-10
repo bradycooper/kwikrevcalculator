@@ -364,9 +364,6 @@ const RevenueCalculator = () => {
                         }
                         className="mr-2"
                       />
-                      <label className="font-medium mr-2">
-                        Do you know more influencers like you?
-                      </label>
                     </div>
                     <span className="font-[500] text-[18px]">
                       Do you know more influencers like you?
